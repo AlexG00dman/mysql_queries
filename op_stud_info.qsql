@@ -1,0 +1,36 @@
+/*Выборка всех сведений о студенте*/
+create table if not exists op_students_info as SELECT id as number, full_name, concat(lpad(plan.code,6,0),'.',plan.start,'.',plan.fin,'.',plan.year,'.',sbook.code_group,' Не изменять!') description, /* 20 символов слева являются ключем группировки!!!*/
+inst_abbr, concat (dir_nick,'-', year, code_group) as sgroup, plan.OKCO, /*склейка названия группы*/
+/*Процедура вычисления формы обучения*/
+CASE
+    WHEN code_form = 1 then 'Очная-сокращенная'
+    WHEN code_form = 2 then 'Заочная'
+    WHEN code_form = 3 then 'Заочная-сокращенная'
+    WHEN code_form = 4 then 'Очно-заочная'
+    WHEN code_form = 5 then 'Очная'
+    ELSE 'очепятка в тексти очивидно же'
+end as edu_form,    
+concat(dir.clip_name,' (',plan.code_profile,', ',level_.name,')') as prof_name, plan.code, zm_students.bdate /*объединение направления, профиля и уровня образования*/ /*дата рождения*/
+FROM zm_students /*таблица со сведениями студентами*/
+        LEFT JOIN zm_assbook sbook ON zm_students.code_stud = sbook.code_student  /*номера зачеток*/
+        LEFT JOIN zm_uch_plan plan ON plan.code = sbook.code_up /*таблица учебного плана*/
+        LEFT JOIN zm_inst inst ON inst.inst_code=plan.code_inst /*cправочник институтов*/
+    LEFT JOIN zm_level level_ ON level_.code_level=plan.code_level /*справочник уровней образования*/
+    LEFT JOIN zm_directions dir ON dir.code_dir=plan.code_dir /*cправочик направлений обучения*/
+                 WHERE code_student and plan.code is not null /*условие код студента и номер учебного плана не равен null*/
+    ORDER BY full_name; /*сортировать по фамилии студента*/
+
+/*Предыдущая версия не используется*/
+Create table op_student_info as SELECT id as number, full_name, concat(lpad(plan.code,6,0),'.',plan.start,'.',plan.fin,'.',plan.year,'.',sbook.code_group,' Не изменять!') description, /* 20 символов слева являются ключем группировки!!!*/
+inst_abbr, concat (dir_nick,'-', year, code_group) as sgroup, plan.OKCO, /*склейка названия группы*/
+concat(dir.clip_name,' (',plan.code_profile,', ',level_.name,')') as prof_name, plan.code, zm_students.bdate /*объединение направления, профиля и уровня образования*/ /*дата рождения*/
+
+FROM zm_students /*таблица со сведениями студентами*/
+        LEFT JOIN zm_assbook sbook ON zm_students.code_stud = sbook.code_student  /*номера зачеток*/
+        LEFT JOIN zm_uch_plan plan ON plan.code = sbook.code_up /*таблица учебного плана*/
+        LEFT JOIN zm_inst inst ON inst.inst_code=plan.code_inst /*cправочник институтов*/
+    LEFT JOIN zm_level level_ ON level_.code_level=plan.code_level /*справочник уровней образования*/
+    LEFT JOIN zm_directions dir ON dir.code_dir=plan.code_dir /*cправочтик направлений обучения*/
+                 WHERE code_student and plan.code is not null /*условие код студента и номер учебного плана не равен null*/
+    ORDER BY full_name; /*сортировать по фамилии студента*/
+    
